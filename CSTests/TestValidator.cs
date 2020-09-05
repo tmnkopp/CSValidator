@@ -5,7 +5,7 @@ using CSValidator;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Telerik.Web.UI;
 
-namespace UnitTests
+namespace CSTests
 {
     [TestClass]
     public class TestValidators
