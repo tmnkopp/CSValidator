@@ -83,8 +83,9 @@
     <Import Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ControlTests.vb" />
-    <Compile Include="UnitTest1.vb" />
+    <Compile Include="TestControls.vb" />
+    <Compile Include="TestValidator.vb" />
+    <Compile Include="TestDelegate.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>

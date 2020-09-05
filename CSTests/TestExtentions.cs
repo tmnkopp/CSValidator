@@ -40,6 +40,28 @@ namespace UnitTests
             string actual = rtb.GetProperty("Text");
             Assert.IsNotNull(actual);
         }
+        [TestMethod]
+        public void ValidationCodes_Split()
+        {
+            List<string> codes = new List<string>();
+            string[] arr = "CODE1,CODE2,CODE3".Split(',');
+            foreach (string item in arr)
+            {
+                codes.Add(item);
+            }
+            Assert.AreEqual(codes.Count, arr.Length);
+        }
+        [TestMethod]
+        public void ValidationCodes_Found()
+        {
+            List<string> codes = new List<string>();
+            string[] arr = "CODE1,CODE2,CODE3".Split(',');
+            foreach (string item in arr)
+            {
+                codes.Add(item);
+            }
+            Assert.IsTrue(codes.Contains("CODE2"));
+        }
 
     }
    

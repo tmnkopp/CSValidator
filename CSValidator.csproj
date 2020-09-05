@@ -43,9 +43,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ValidationBuilder.cs" />
     <Compile Include="ValidationProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ValidationExpression.cs" />
+    <Compile Include="ValidationItem.cs" />
     <Compile Include="Validator.cs" />
     <Compile Include="ValidatorExtentions.cs" />
   </ItemGroup>

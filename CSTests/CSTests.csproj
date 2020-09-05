@@ -54,6 +54,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TextRegexCodes.cs" />
     <Compile Include="TestExtentions.cs" />
     <Compile Include="TestProvider.cs" />
     <Compile Include="TestValidator.cs" />

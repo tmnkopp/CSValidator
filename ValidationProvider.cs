@@ -14,8 +14,8 @@ namespace CSValidator
         public ValidationProvider()
         {
         }
-        public IEnumerable<ValidationExpression> GetValidationExpressions() {
-            List<ValidationExpression> ValidationExpressions = new List<ValidationExpression>();
+        public IEnumerable<ValidationItem> GetValidationExpressions() {
+            List<ValidationItem> ValidationExpressions = new List<ValidationItem>();
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["CAClientConnectionString"].ConnectionString))
             {
                 conn.Open();
@@ -27,9 +27,9 @@ namespace CSValidator
                     {
                         while (rdr.Read())
                         {
-                            yield return new ValidationExpression()
+                            yield return new ValidationItem()
                             {
-                                CODE = rdr["VALIDATION_CODE"].ToString(),
+                                ValidationCode = rdr["ValidationCode"].ToString(),
                                 Expression = rdr["Expression"].ToString(),
                                 ValidationType = rdr["ValidationType"].ToString(),
                                 ErrorMessage = rdr["ErrorMessage"].ToString()

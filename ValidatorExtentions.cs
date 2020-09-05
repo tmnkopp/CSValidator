@@ -49,13 +49,13 @@ namespace CSValidator
 
 
         public static string ExtractValueFromControl(this object Control ) 
-        { 
-            if (Control.GetType().GetProperty("Text") != null) 
-                return Control.GetProperty("Text"); 
+        {
+            if (Control.GetType().GetProperty("SelectedDate") != null)
+                return Control.GetProperty("SelectedDate");
             if (Control.GetType().GetProperty("SelectedValue") != null)
                 return Control.GetProperty("SelectedValue");
-            if (Control.GetType().GetProperty("SelectedDate") != null)
-                return Control.GetProperty("SelectedDate"); 
+            if (Control.GetType().GetProperty("Text") != null) 
+                return Control.GetProperty("Text");  
             return "";
         }
         public static string GetProperty(this object Object, string PropertyName)
@@ -66,7 +66,11 @@ namespace CSValidator
                 if ( prop.PropertyType  == typeof(System.String))
                 {
                     return (string)prop.GetValue(Object);
-                }  
+                }
+                if (PropertyName == "SelectedDate")
+                {
+                    return Convert.ToString(prop.GetValue(Object));
+                }
             }
             return "";
         }

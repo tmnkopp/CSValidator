@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 using CSValidator;
@@ -8,43 +9,54 @@ using Telerik.Web.UI;
 namespace CSTests
 {
     [TestClass]
-    public class TestValidators
-    { 
+    public class TestCSValidators
+    {
         [TestMethod]
-        public void Validator_Validates()
-        { 
+        public void CSValidator_Validates_REQUIRE()
+        {
+            RadTextBox rtb = new RadTextBox();
+            rtb.Text = "";
+            rtb.ID = "IPAddress";
+            ValidationBuilder validation = new ValidationBuilder(rtb);
+            validation.AddValidation("REQUIRE");
+            Assert.IsTrue(validation.IsValid);
+        }
+        [TestMethod]
+        public void CSValidator_Validates_SingleCode()
+        {
             RadTextBox rtb = new RadTextBox();
             rtb.Text = "123.123.123.123";
             rtb.ID = "IPAddress";
-
-            Validator validator = new Validator(rtb);
-            var validated = validator.Validate("IPADDRESS"); 
-            Assert.IsTrue(validated); 
+            ValidationBuilder validation = new ValidationBuilder(rtb);
+            validation.AddValidation("IPADDRESS");  
+            Assert.IsTrue(validation.IsValid);
         }
         [TestMethod]
-        public void Validator_Validates_Any()
+        public void CSValidator_Validates_MultiCodes()
         {
             RadTextBox rtb = new RadTextBox();
-            rtb.Text = "CVE-1234-123456";
-            rtb.ID = "CVE"; 
-            Validator validator = new Validator(rtb);
-            var validated = validator.ValidateAny("IPADDRESS,CVE"); 
-            Assert.IsTrue(validated);
+            rtb.Text = "123.123.123.123";
+            rtb.ID = "IPAddress";
+            ValidationBuilder validation = new ValidationBuilder(rtb);
+            validation.AddValidation("PHONE");
+            validation.AddValidation("IPADDRESS");
+            validation.ValidateAny();
+            Assert.IsTrue(validation.IsValid);
         }
         [TestMethod]
-        public void Validator_Sends_Validation_Message()
+        public void CSValidator_Validates_MinMax()
         {
-            string message = null;
             RadTextBox rtb = new RadTextBox();
-            rtb.Text = "~~CVE-1234-12345";
-            rtb.ID = "CommonVulunerabilityEnumCode"; 
-            Validator validator = new Validator(rtb); 
-            
-            if (!validator.ValidateAny("IPADDRESS,CVE,PHONE"))
-            {
-                message = validator.ErrorMessage;
-            } 
+            rtb.Text = "123.123.123.123";
+            rtb.ID = "IPAddress";
+            ValidationBuilder validation = new ValidationBuilder(rtb)
+                .MaxLength(999)
+                .MinLength(100)
+                .ValidateAny();
+            bool isValid = validation.IsValid;
+            string message = validation.ErrorMessage;
             Assert.IsNotNull(message);
-        }
+        } 
+
     }
 }

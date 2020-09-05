@@ -12,102 +12,163 @@ using System.Web.UI.WebControls;
 
 namespace CSValidator
 {
-
+    public enum ValidationTypes {  
+        REGEX,
+        FUNC
+    }
     public class Validator
     {
-        private string _target = "";
-        public string Target
+        #region PROPS
+
+        private string _StringToValidate = "";
+        public string StringToValidate
         {
-            get { return _target; }
-            set { _target = value; }
+            get { return _StringToValidate; }
+            set { _StringToValidate = value; }
         }
-        private string _label = "";
-        public string Label
+        private string _ControlCaption = "";
+        public string ControlCaption
         {
-            get { return _label; }
-            set { _label = value; }
-        } 
-        private bool _required = false; 
+            get { return _ControlCaption; }
+            set { _ControlCaption = value; }
+        }
+        private bool _required = false;
         public bool Required
         {
             get { return _required; }
             set { _required = value; }
         }
-        private StringBuilder _message; 
+        private bool _IsValid;
+        public bool IsValid
+        {
+            get  {
+                if (!_Validated)
+                    SetIsValidAll();
+                return _IsValid;
+            }
+            set { _IsValid = value; }
+        }
+        private bool _Validated = false;
+
+        private StringBuilder _MessageBuilder;
+        private string _ErrorMessage;
         public string ErrorMessage
         {
-            get { return _message.ToString(); } 
-        }
-        private string _ValidationCodes = "";
-        private List<ValidationExpression> _ValidationResults; 
-        public List<ValidationExpression> ValidationResults
+            get  {
+                if (_ErrorMessage == null)
+                    _ErrorMessage = _MessageBuilder.ToString();
+                return _ErrorMessage;
+            } 
+            set { _ErrorMessage = value; }
+        }  
+        private List<ValidationItem> _ValidationItems;
+        public List<ValidationItem> ValidationItems
         {
-            get {
-                if (_ValidationResults == null)
-                {
-                    GetValidationResults();
-                }
-                return _ValidationResults;  
-            }
-            set { _ValidationResults = value; }
-        } 
+            get { return _ValidationItems; }
+            set { _ValidationItems = value; }
+        }
+        private ValidationProvider _ValidationProvider;
+
+
+        #endregion
+
+        #region CTOR
+
         public Validator()
-        { 
-            _message = new StringBuilder();
+        {
+            _ValidationProvider = new ValidationProvider();
+            _MessageBuilder = new StringBuilder();
+            _ValidationItems = new List<ValidationItem>(); 
         }
         public Validator(Control ControlToValidate) : this()
         {
-            this._label = ControlToValidate.ExtractLabelFromControl().Trim();
-            this._target = ControlToValidate.ExtractValueFromControl().Trim();
-            this.Required = true;
-        } 
-        public Validator(string Label, string Target) : this()
-        {
-            this._target = Target;
-            this._label = Label; 
+            this._ControlCaption = ControlToValidate.ExtractLabelFromControl().Trim();
+            this._StringToValidate = ControlToValidate.ExtractValueFromControl().Trim();
         }
-        public bool Validate(string ValidationCodes)
+        public Validator(Control ControlToValidate, string ValidationCode) : this(ControlToValidate)
         {
-            this._ValidationCodes = ValidationCodes; 
-            var validations = (from v in ValidationResults.AsEnumerable()
+            this.ValidationItems.Add(new ValidationItem(ValidationCode));
+        }
+        public Validator(string StringToValidate) : this()
+        {
+            this._StringToValidate = StringToValidate;
+        }
+        public Validator(string StringToValidate, string ValidationCode) : this(StringToValidate)
+        {
+            this.ValidationItems.Add(new ValidationItem(ValidationCode));
+        }
+   
+
+        #endregion
+
+        #region METHODS
+
+        public void SetIsValidAll()
+        {
+            ValidateItems();
+            var validations = (from v in ValidationItems.AsEnumerable()
                                where v.Validated == false
                                select v).ToList();
 
-            return (validations.Count == 0);
+            IsValid = (validations.Count == 0);
         }
-        public bool ValidateAny(string ValidationCodes)
+        public void SetIsValidAny()
         {
-            this._ValidationCodes = ValidationCodes;
-            var validations = (from v in ValidationResults.AsEnumerable()
+            ValidateItems();
+            var validations = (from v in ValidationItems.AsEnumerable()
                                where v.Validated == true
-                               select v).ToList(); 
-             return (validations.Count > 0);
+                               select v).ToList();
+            IsValid = (validations.Count > 0);
         }
-     
-        private void GetValidationResults() {
-            ValidationProvider provider = new ValidationProvider();
-            _ValidationResults = new List<ValidationExpression>();
-            foreach (var item in provider.GetValidationExpressions())
-                if (("," + this._ValidationCodes).Contains("," + item.CODE))
-                    _ValidationResults.Add(item);
+        private void MapToProvider(ValidationItem validationItem)
+        {
+            if (validationItem.ValidationCode == null)
+                return;
 
-            foreach (ValidationExpression _ValidationExpression in _ValidationResults)
+            var item = _ValidationProvider
+                .GetValidationExpressions()
+                .Where(v => v.ValidationCode == validationItem.ValidationCode).Single();
+            if (item != null)
+            { 
+                if (validationItem.Expression == null)
+                    validationItem.Expression = item.Expression;
+                if (validationItem.ErrorMessage == null)
+                    validationItem.ErrorMessage = item.ErrorMessage;
+                if (validationItem.ValidationType == null)
+                    validationItem.ValidationType = item.ValidationType; 
+            };  
+        }
+
+        private void ValidateItems() {  
+        
+            foreach (ValidationItem _ValidationItem in _ValidationItems)
             {
-                _ValidationExpression.ErrorMessage = string.Format(_ValidationExpression.ErrorMessage, _label) + " " ; 
-                if (_ValidationExpression.ValidationType == "REQUIRE")
-                { 
-                    _ValidationExpression.Validated = !string.IsNullOrEmpty(_target);
-                    _message.Append(_ValidationExpression.ErrorMessage);  
+                MapToProvider(_ValidationItem);
+
+                if (_ValidationItem.ErrorMessage != null)  { 
+                    _ValidationItem.ErrorMessage = string.Format(_ValidationItem.ErrorMessage, _ControlCaption, _ValidationItem.DelegateArgument);
                 }
-                if (_ValidationExpression.ValidationType == "REGEX")
-                { 
-                    Match match = Regex.Match(_target, _ValidationExpression.Expression);
-                    _ValidationExpression.Validated = match.Success;
-                    if (!match.Success)  {
-                        _message.Append(_ValidationExpression.ErrorMessage);
-                    } 
-                } 
-            } 
-        }  
+                 
+                if (_ValidationItem.ValidationType == "REGEX")
+                {
+                    Match match = Regex.Match(_StringToValidate, _ValidationItem.Expression);
+                    _ValidationItem.Validated = match.Success;
+                    if (!match.Success)
+                    {
+                        _MessageBuilder.Append(_ValidationItem.ErrorMessage);
+                    }
+                }
+                if (_ValidationItem.ValidationType == "FUNC")
+                {
+                    _ValidationItem.Validated = _ValidationItem.ValidationMethod(_StringToValidate);
+                    if (!_ValidationItem.Validated)
+                        _MessageBuilder.Append(_ValidationItem.ErrorMessage);
+                }
+            }
+            this._Validated = true;
+        }
+
+        #endregion
+
     }
 }
