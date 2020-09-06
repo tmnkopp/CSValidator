@@ -35,35 +35,30 @@ namespace CSValidator
             chr += the_string[the_string.Length-1];
             return chr;
         }
- 
-        public static ListItem ErrorListItem(this Validator Validator)
-        { 
-            return new ListItem(Validator.ErrorMessage);
-        }
-        public static string ExtractLabelFromControl(this object Control)
+        public static string ExtractCaptionFromControl(this object Control)
         {
             if (Control.GetType().GetProperty("ID") != null)
-                return Control.GetProperty("ID").ToProperCase(); 
+                return Control.GetPropertyValue("ID").ToProperCase();
+            if (Control.GetType().GetProperty("Label") != null)
+                return Control.GetPropertyValue("Label").ToProperCase();
             return  null;
         }
-
-
-        public static string ExtractValueFromControl(this object Control ) 
+        public static string ExtractValueFromControl(this object Control)
         {
             if (Control.GetType().GetProperty("SelectedDate") != null)
-                return Control.GetProperty("SelectedDate");
+                return Control.GetPropertyValue("SelectedDate");
             if (Control.GetType().GetProperty("SelectedValue") != null)
-                return Control.GetProperty("SelectedValue");
-            if (Control.GetType().GetProperty("Text") != null) 
-                return Control.GetProperty("Text");  
+                return Control.GetPropertyValue("SelectedValue");
+            if (Control.GetType().GetProperty("Text") != null)
+                return Control.GetPropertyValue("Text");
             return "";
         }
-        public static string GetProperty(this object Object, string PropertyName)
+        public static string GetPropertyValue(this object Object, string PropertyName)
         {
             PropertyInfo prop = Object.GetType().GetProperty(PropertyName);
             if (prop != null)
             {
-                if ( prop.PropertyType  == typeof(System.String))
+                if (prop.PropertyType == typeof(System.String))
                 {
                     return (string)prop.GetValue(Object);
                 }
@@ -74,5 +69,6 @@ namespace CSValidator
             }
             return "";
         }
+
     }
 }

@@ -43,15 +43,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ValidationBuilder.cs" />
-    <Compile Include="ValidationProvider.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ValidationItem.cs" />
+    <Compile Include="DelegateValidator.cs" />
+    <Compile Include="ExpressionValidator.cs" />
+    <Compile Include="IValidator.cs" />
     <Compile Include="Validator.cs" />
+    <Compile Include="ValidationExpression .cs" />
+    <Compile Include="ValidationResult.cs" />
+    <Compile Include="ValidationTypeProvider.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="BaseValidator.cs" />
     <Compile Include="ValidatorExtentions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Validators\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

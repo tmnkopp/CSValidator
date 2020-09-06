@@ -12,51 +12,43 @@ namespace CSTests
     public class TestCSValidators
     {
         [TestMethod]
-        public void CSValidator_Validates_REQUIRE()
+        public void Validator_Returns_Error_Message_Caption()
+        {
+            RadTextBox rtb = new RadTextBox();
+            rtb.Text = "##########";
+            rtb.ID = "txtPhoneNumber";
+            Validator validation = new Validator(rtb); 
+            bool isValid = validation.IpAddress().IsValid;
+            string message = validation.ErrorMessage;
+            Assert.IsTrue(message.Contains("Phone Number"));
+        }
+        [TestMethod]
+        public void Validator_Validates_REQUIRE()
         {
             RadTextBox rtb = new RadTextBox();
             rtb.Text = "";
             rtb.ID = "IPAddress";
-            ValidationBuilder validation = new ValidationBuilder(rtb);
-            validation.AddValidation("REQUIRE");
-            Assert.IsTrue(validation.IsValid);
+            Validator validation = new Validator(rtb); 
+            Assert.IsTrue(validation.Require().IsValid);
         }
         [TestMethod]
-        public void CSValidator_Validates_SingleCode()
+        public void Validator_Validates_SingleCode()
+        {
+            RadTextBox rtb = new RadTextBox();
+            rtb.Text = "123";
+            rtb.ID = "IPAddress";
+            Validator validation = new Validator(rtb); 
+            Assert.IsTrue(validation.EqualsAny(new string[] { "22", "123" }).IsValid);
+        }
+        [TestMethod]
+        public void Validator_Validates_MultiCodes()
         {
             RadTextBox rtb = new RadTextBox();
             rtb.Text = "123.123.123.123";
             rtb.ID = "IPAddress";
-            ValidationBuilder validation = new ValidationBuilder(rtb);
-            validation.AddValidation("IPADDRESS");  
+            Validator validation = new Validator(rtb); 
+            validation.Phone().IpAddress().ValidateAny();
             Assert.IsTrue(validation.IsValid);
-        }
-        [TestMethod]
-        public void CSValidator_Validates_MultiCodes()
-        {
-            RadTextBox rtb = new RadTextBox();
-            rtb.Text = "123.123.123.123";
-            rtb.ID = "IPAddress";
-            ValidationBuilder validation = new ValidationBuilder(rtb);
-            validation.AddValidation("PHONE");
-            validation.AddValidation("IPADDRESS");
-            validation.ValidateAny();
-            Assert.IsTrue(validation.IsValid);
-        }
-        [TestMethod]
-        public void CSValidator_Validates_MinMax()
-        {
-            RadTextBox rtb = new RadTextBox();
-            rtb.Text = "123.123.123.123";
-            rtb.ID = "IPAddress";
-            ValidationBuilder validation = new ValidationBuilder(rtb)
-                .MaxLength(999)
-                .MinLength(100)
-                .ValidateAny();
-            bool isValid = validation.IsValid;
-            string message = validation.ErrorMessage;
-            Assert.IsNotNull(message);
         } 
-
     }
 }

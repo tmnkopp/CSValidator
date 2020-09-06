@@ -11,8 +11,8 @@ namespace UnitTests
         [TestMethod]
         public void ProviderProvides()
         {
-            ValidationProvider p = new ValidationProvider();
-            Assert.IsNotNull(p.GetValidationExpressions()); 
+            ValidationTypeProvider p = new ValidationTypeProvider();
+            Assert.IsNotNull(p.GetItems()); 
         } 
     }
 }

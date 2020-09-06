@@ -37,7 +37,7 @@ namespace UnitTests
             RadTextBox rtb = new RadTextBox();
             rtb.Text = "IP Address";
             rtb.ID = "id"; 
-            string actual = rtb.GetProperty("Text");
+            string actual = rtb.GetPropertyValue("Text");
             Assert.IsNotNull(actual);
         }
         [TestMethod]

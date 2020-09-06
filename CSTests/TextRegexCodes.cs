@@ -34,7 +34,7 @@ namespace UnitTests
                 string chr = target.Substring(pos, 1);
                 match = Regex.Match(chr, replaceRegex);
                 if (match.Success)
-                    masked += mask;
+                    masked += "*";
                 else
                     masked += chr;  
             }
@@ -49,7 +49,7 @@ namespace UnitTests
             string expected = "123n****";
             string masked = "";
             string target = "123n4567";
-            Match match = Regex.Match(target, @"^\d{3}(n\d{4})$");
+            Match match = Regex.Match(target, @"^\d{3}n(\d{4})$");
             int startPos = 0;
             if (match.Success)
                 startPos = match.Groups[1].Index;

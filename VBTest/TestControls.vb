@@ -7,11 +7,28 @@ Imports Telerik.Web.UI
 
 <TestClass()> Public Class TestControls
     <TestMethod()> Public Sub ValidateAllRadTextBox()
-        Dim rtb As RadTextBox = New RadTextBox()
-        rtb.Text = "555-555-5555"
-        rtb.ID = "rtbPhoneNumber"
+        Dim validator As Validator = New Validator()
+        Dim bl_Errors As BulletedList = New BulletedList()
+        Dim isvalid As Boolean = False
+        Dim err As String
 
-        Dim validator As ValidationBuilder = New ValidationBuilder(rtb, "PHONE").Validate()
-        Assert.IsTrue(validator.IsValid)
+        Dim control As Control = GetControl()
+
+        If Not validator.ApplyValidation(control, "PHONE").IsValid Then
+            err = validator.ErrorMessage
+        End If
+        Assert.IsFalse(String.IsNullOrWhiteSpace(err))
     End Sub
+
+    Function GetControl() As Control
+        Dim control As RadTextBox = New RadTextBox()
+        control.Text = "555-555-5555"
+        control.ID = "rtbPhoneNumber"
+
+        Dim cb As DropDownList = New DropDownList()
+        cb.SelectedValue = "555-555-5555"
+        cb.ID = "rtbPhoneNumber"
+
+        Return DirectCast(cb, Control)
+    End Function
 End Class

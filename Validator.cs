@@ -1,173 +1,229 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace CSValidator
 {
-    public enum ValidationTypes {  
-        REGEX,
-        FUNC
-    }
     public class Validator
     {
-        #region PROPS
-
-        private string _StringToValidate = "";
-        public string StringToValidate
-        {
-            get { return _StringToValidate; }
-            set { _StringToValidate = value; }
-        }
-        private string _ControlCaption = "";
-        public string ControlCaption
-        {
-            get { return _ControlCaption; }
-            set { _ControlCaption = value; }
-        }
-        private bool _required = false;
-        public bool Required
-        {
-            get { return _required; }
-            set { _required = value; }
-        }
-        private bool _IsValid;
-        public bool IsValid
-        {
-            get  {
-                if (!_Validated)
-                    SetIsValidAll();
-                return _IsValid;
-            }
-            set { _IsValid = value; }
-        }
-        private bool _Validated = false;
-
-        private StringBuilder _MessageBuilder;
-        private string _ErrorMessage;
-        public string ErrorMessage
-        {
-            get  {
-                if (_ErrorMessage == null)
-                    _ErrorMessage = _MessageBuilder.ToString();
-                return _ErrorMessage;
-            } 
-            set { _ErrorMessage = value; }
-        }  
-        private List<ValidationItem> _ValidationItems;
-        public List<ValidationItem> ValidationItems
-        {
-            get { return _ValidationItems; }
-            set { _ValidationItems = value; }
-        }
-        private ValidationProvider _ValidationProvider;
-
-
-        #endregion
-
+         
         #region CTOR
-
+         
+        private List<IValidator> Validators; 
         public Validator()
-        {
-            _ValidationProvider = new ValidationProvider();
-            _MessageBuilder = new StringBuilder();
-            _ValidationItems = new List<ValidationItem>(); 
-        }
-        public Validator(Control ControlToValidate) : this()
-        {
-            this._ControlCaption = ControlToValidate.ExtractLabelFromControl().Trim();
-            this._StringToValidate = ControlToValidate.ExtractValueFromControl().Trim();
-        }
-        public Validator(Control ControlToValidate, string ValidationCode) : this(ControlToValidate)
-        {
-            this.ValidationItems.Add(new ValidationItem(ValidationCode));
+        { 
+            Validators = new List<IValidator>(); 
         }
         public Validator(string StringToValidate) : this()
         {
-            this._StringToValidate = StringToValidate;
+            this._TargetValue = StringToValidate;
         }
-        public Validator(string StringToValidate, string ValidationCode) : this(StringToValidate)
+        public Validator(Control ControlToValidate) : this()
         {
-            this.ValidationItems.Add(new ValidationItem(ValidationCode));
+            SetControlProps(ControlToValidate);
         }
-   
 
         #endregion
 
-        #region METHODS
-
-        public void SetIsValidAll()
+        #region Props
+        private bool _IsValidated = false; 
+        private bool _IsValid; 
+        public bool IsValid
         {
-            ValidateItems();
-            var validations = (from v in ValidationItems.AsEnumerable()
-                               where v.Validated == false
-                               select v).ToList();
-
-            IsValid = (validations.Count == 0);
+            get {
+                if (!_IsValidated)
+                    Validate();
+                return _IsValid; }
+            set { _IsValid = value; }
         }
-        public void SetIsValidAny()
+        private string _ErrorMessage=""; 
+        public string ErrorMessage
         {
-            ValidateItems();
-            var validations = (from v in ValidationItems.AsEnumerable()
-                               where v.Validated == true
-                               select v).ToList();
-            IsValid = (validations.Count > 0);
-        }
-        private void MapToProvider(ValidationItem validationItem)
-        {
-            if (validationItem.ValidationCode == null)
-                return;
-
-            var item = _ValidationProvider
-                .GetValidationExpressions()
-                .Where(v => v.ValidationCode == validationItem.ValidationCode).Single();
-            if (item != null)
-            { 
-                if (validationItem.Expression == null)
-                    validationItem.Expression = item.Expression;
-                if (validationItem.ErrorMessage == null)
-                    validationItem.ErrorMessage = item.ErrorMessage;
-                if (validationItem.ValidationType == null)
-                    validationItem.ValidationType = item.ValidationType; 
-            };  
-        }
-
-        private void ValidateItems() {  
-        
-            foreach (ValidationItem _ValidationItem in _ValidationItems)
-            {
-                MapToProvider(_ValidationItem);
-
-                if (_ValidationItem.ErrorMessage != null)  { 
-                    _ValidationItem.ErrorMessage = string.Format(_ValidationItem.ErrorMessage, _ControlCaption, _ValidationItem.DelegateArgument);
-                }
-                 
-                if (_ValidationItem.ValidationType == "REGEX")
+            get {
+                if (string.IsNullOrEmpty(_ErrorMessage)) 
+                    foreach (ValidationResult item in ValidationResults) 
+                        _ErrorMessage += item.ErrorMessage + " ";
+                if (!string.IsNullOrEmpty(_ErrorMessage))
                 {
-                    Match match = Regex.Match(_StringToValidate, _ValidationItem.Expression);
-                    _ValidationItem.Validated = match.Success;
-                    if (!match.Success)
-                    {
-                        _MessageBuilder.Append(_ValidationItem.ErrorMessage);
-                    }
-                }
-                if (_ValidationItem.ValidationType == "FUNC")
-                {
-                    _ValidationItem.Validated = _ValidationItem.ValidationMethod(_StringToValidate);
-                    if (!_ValidationItem.Validated)
-                        _MessageBuilder.Append(_ValidationItem.ErrorMessage);
-                }
+                    if (_ErrorMessage.Contains("{1}"))
+                        return string.Format(_ErrorMessage, TargetCaption, "");
+                    if (_ErrorMessage.Contains("{0}"))
+                        return string.Format(_ErrorMessage, TargetCaption);
+                } 
+                return _ErrorMessage; 
             }
-            this._Validated = true;
+            set { _ErrorMessage = value; }
+        }
+        private string _TargetCaption;
+        public string TargetCaption
+        {
+            get { return _TargetCaption; }
+            set { _TargetCaption = value; }
+        }
+        private string _TargetValue;
+        public string TargetValue
+        {
+            get { return _TargetValue; }
+            set { _TargetValue = value; }
+        }
+        #endregion
+
+        #region Prop Setters
+        public Validator SetTargetCaption(string Caption)
+        {
+            _TargetCaption = Caption;
+            return this;
+        }
+        public Validator SetErrorMessage(string ErrorMessage)
+        {
+            _ErrorMessage = ErrorMessage;
+            return this;
+        }
+        #endregion
+
+        #region Public Setters
+
+        public Validator Validate()
+        {
+            IsValid = (from v in ValidationResults
+                       where v.IsValid == false
+                       select v
+                        ).ToList().Count() == 0;
+            return this;
+        }
+        public Validator ValidateAny()
+        {
+            IsValid = (from v in ValidationResults
+                       where v.IsValid == true
+                       select v
+                        ).ToList().Count() > 0;
+            return this;
+        }
+        public Validator ApplyValidation(Control ControlToValidate, string ValidationCode)
+        {
+            SetControlProps(ControlToValidate);
+            Validators.Add(new ExpressionValidator(ValidationCode));
+            return this;
+        }
+        public Validator ApplyValidation(string ValidationCode)
+        {
+            Validators.Add(new ExpressionValidator(ValidationCode));
+            return this;
+        }
+        public Validator ApplyValidation(Func<string, bool> ValidationDelegate, string ErrorMessage)
+        {
+            AddDelegate(ValidationDelegate, ErrorMessage);
+            return this;
         }
 
+        #endregion
+
+        #region Private Methods
+        private void SetControlProps(Control ControlToValidate)
+        {
+            this._TargetCaption = ControlToValidate.ExtractCaptionFromControl().Trim();
+            this._TargetValue = ControlToValidate.ExtractValueFromControl().Trim();
+        } 
+        private void AddDelegate(Func<string, bool> ValidationDelegate, string ErrorMessage)
+        {
+            Validators.Add(new DelegateValidator(ValidationDelegate, ErrorMessage));
+        }
+        public IEnumerable<ValidationResult> ValidationResults { 
+            get  {
+                _IsValidated = true;
+                foreach (IValidator validator in Validators) 
+                    yield return validator.Validate(this._TargetValue); 
+            }  
+        } 
+        private string FormatErrorMessage(string ErrorMesssage) {
+            if (ErrorMessage.Contains("{0}")) 
+                 return string.Format(ErrorMesssage, TargetCaption);
+            return ErrorMesssage;
+        }
+        #endregion
+          
+        #region ExpressionCodes
+        public Validator IpAddress()
+        {
+            Validators.Add(new ExpressionValidator("IPADDRESS"));
+            return this;
+        }
+        public Validator CIDR()
+        {
+            Validators.Add(new ExpressionValidator("CIDR"));
+            return this;
+        }
+        public Validator Phone()
+        {
+            Validators.Add(new ExpressionValidator("PHONE"));
+            return this;
+        }
+        public Validator Email()
+        {
+            Validators.Add(new ExpressionValidator("EMAIL"));
+            return this;
+        }
+        public Validator CVE()
+        {
+            Validators.Add(new ExpressionValidator("CVE"));
+            return this;
+        }
+        public Validator Numeric()
+        {
+            Validators.Add(new ExpressionValidator("NUMERIC"));
+            return this;
+        }
+        #endregion
+
+        #region Delegates
+
+        public Validator Require()
+        {
+            AddDelegate((s) => (string.IsNullOrEmpty(s) || string.IsNullOrWhiteSpace(s)), "{0} " + $"is a required field.");
+            return this;
+        }
+        public Validator MaxLength(int Length)
+        {
+            if (Length < 0)
+                throw new Exception("MaxLength: Length must be greater than 0.");
+            AddDelegate((s) => (s.Length <= Length), "{0} " + $"must be fewer than {Length.ToString()} characters.");
+            return this;
+        }
+        public Validator MinLength(int Length)
+        {
+            if (Length < 0)
+                throw new Exception("MinLength: Length must be greater than 0.");
+            AddDelegate((s) => (s.Length > Length), "{0} " + $"must be at least {Length.ToString()} characters.");
+            return this;
+        }
+        public Validator Equals(string Value)
+        { 
+            AddDelegate((s) => (s == Value), "{0} " + $"must equal {Value.ToString()}.");
+            return this;
+        }
+        public Validator DoesNotEqual(string Value)
+        { 
+            AddDelegate((s) => (s != Value), "{0} " + $"cannot equal {Value.ToString()}.");
+            return this;
+        }
+        public Validator DoesNotEqualAny(string[] Values)
+        {         
+            if (Values==null)
+                throw new ArgumentNullException("Argument Values cannot be null.");
+            AddDelegate((s) => (!Values.Contains(s)), "{0} " + $"cannot equal any {Values.ToString()}.");
+            return this;
+        }
+        public Validator EqualsAny(string[] Values)
+        {
+            if (Values == null)
+                throw new ArgumentNullException("Argument Values cannot be null.");
+            AddDelegate((s) => (Values.Contains(s)), "{0} " + $"must equal any {Values.ToString()}.");
+            return this;
+        }
+         
         #endregion
 
     }
