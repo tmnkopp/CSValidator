@@ -12,12 +12,21 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace CSValidator
-{
-     
-    internal abstract class BaseValidator
+{ 
+    internal abstract class BaseValidator: IValidator
     {
-        #region PROPS
-       
+        #region CTORs 
+        public BaseValidator()
+        {
+        }
+        public BaseValidator(string StringToValidate, string ErrorMessage)
+        {
+            _Input = StringToValidate;
+            _ErrorMessage = ErrorMessage;
+        }
+        #endregion
+
+        #region PROPS 
         private string _Input = "";
         public string Input
         {
@@ -30,24 +39,18 @@ namespace CSValidator
             get  { return _IsValid;  }
             set { _IsValid = value; }
         }
-   
-        #endregion
-
-        #region CTOR
-        protected StringBuilder _MessageBuilder;
-        protected ValidationResult _ValidationResult;
-        public BaseValidator()
+        private string _ErrorMessage = "";
+        public string ErrorMessage
         {
-            _ValidationResult = new ValidationResult();
-            _MessageBuilder = new StringBuilder(); 
-        } 
+            get { return _ErrorMessage; }
+            set { _ErrorMessage = value; }
+        }
         #endregion
-
+         
         #region METHODS
-        public virtual ValidationResult Validate(string Input) {
-            _ValidationResult.IsValid = string.IsNullOrEmpty(Input);
-            _ValidationResult.IsValid = string.IsNullOrWhiteSpace(Input);
-            return _ValidationResult; 
+        public virtual IValidator Validate(string Input) {
+            this.IsValid = !string.IsNullOrEmpty(Input) && !string.IsNullOrWhiteSpace(Input);
+            return this; 
         } 
         #endregion 
     }

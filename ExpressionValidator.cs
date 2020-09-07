@@ -14,25 +14,23 @@ namespace CSValidator
         {
             _ValidationCode = ValidationCode;
         }
-        public override ValidationResult Validate(string Input)
+        public override IValidator Validate(string Input)
         {
-            ValidationTypeProvider _ValidationProvider = new ValidationTypeProvider();
+            ValidationDefinitionProvider _ValidationProvider = new ValidationDefinitionProvider();
             if (string.IsNullOrEmpty(_ValidationCode))
                 throw new ArgumentNullException("Validation Code cannot be null or empty.");
 
-            var validationItem = _ValidationProvider.ValidationTypes
+            var validationItem = _ValidationProvider.ValidationDefinitions
                 .Where(v => v.ValidationCode == _ValidationCode).Single();
 
             if (validationItem == null)
                 throw new Exception("Validation Code not found.");
 
-            _ValidationResult.IsValid = Regex.Match(Input, validationItem.Expression).Success;
-            if (!_ValidationResult.IsValid)
-            {
-                _MessageBuilder.Append(validationItem.ErrorMessage);
-                _ValidationResult.ErrorMessage = validationItem.ErrorMessage;
-            }
-            return _ValidationResult;
+            this.IsValid = Regex.Match(Input, validationItem.Expression).Success;
+            if (!this.IsValid) 
+                this.ErrorMessage = validationItem.ErrorMessage;
+           
+            return this;
         }
     }
 }

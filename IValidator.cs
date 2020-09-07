@@ -9,7 +9,8 @@ namespace CSValidator
 {
     internal interface IValidator
     {
-        bool IsValid { get; set; }  
-        ValidationResult Validate(string Input);
+        bool IsValid { get; set; }
+        string ErrorMessage { get; set; }
+        IValidator Validate(string Input); 
     }  
 }

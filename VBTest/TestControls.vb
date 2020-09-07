@@ -14,7 +14,7 @@ Imports Telerik.Web.UI
 
         Dim control As Control = GetControl()
 
-        If Not validator.ApplyValidation(control, "PHONE").IsValid Then
+        If Not validator.Validate(control, "PHONE").IsValid Then
             err = validator.ErrorMessage
         End If
         Assert.IsFalse(String.IsNullOrWhiteSpace(err))

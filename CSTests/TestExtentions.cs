@@ -13,32 +13,15 @@ using System.Web.UI;
 namespace UnitTests
 { 
     [TestClass]
-    public class TestExtentions
+    public class TestValidationCodes
     {
+
         [TestMethod]
-        public void TestToProper()
-        {
-            string target = "rcbIPAddress";
-            string expected = "IP Address"; 
-            string actual = target.ToProperCase();
-            Assert.AreEqual(expected, actual);
-        }
-        [TestMethod]
-        public void TestCAPSToProper()
-        {
-            string target = "rcbCVENUM";
-            string expected = "CVENUM";
-            string actual = target.ToProperCase();
-            Assert.AreEqual(expected, actual);
-        }
-        [TestMethod]
-        public void TestPropValGetter()
+        public void Array_Resolves_ToSTR()
         { 
-            RadTextBox rtb = new RadTextBox();
-            rtb.Text = "IP Address";
-            rtb.ID = "id"; 
-            string actual = rtb.GetPropertyValue("Text");
-            Assert.IsNotNull(actual);
+            string[] arr = "CODE1,CODE2,CODE3".Split(',');
+            string actual = string.Join(",", arr);
+            Assert.AreEqual("CODE1,CODE2,CODE3", actual);
         }
         [TestMethod]
         public void ValidationCodes_Split()

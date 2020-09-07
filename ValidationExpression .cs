@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace CSValidator
 { 
-    public class ValidationExpression   {
-        public ValidationExpression ()  { }
-        public ValidationExpression (string ValidationCode)
+    public class ValidationDefinition   {
+        public ValidationDefinition ()  { }
+        public ValidationDefinition (string ValidationCode)
         {
             this.ValidationCode = ValidationCode;
         }

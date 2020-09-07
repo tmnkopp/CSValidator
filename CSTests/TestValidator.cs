@@ -11,6 +11,24 @@ namespace CSTests
     [TestClass]
     public class TestCSValidators
     {
+        
+        [TestMethod]
+        public void DelegateValidator_Returns__ValidatorDefinitionCaption()
+        { 
+            Validator validation = new Validator("Testy McTestface");
+            bool isValid = validation.MinLength(121).IsValid;
+            string message = validation.ErrorMessage;
+            Assert.IsTrue(message.Contains("121"));
+        }
+        [TestMethod]
+        public void DoesNotEqualAny_Returns__List()
+        {
+            Validator validation = new Validator("Testy McTestface");
+            validation.TargetCaption = "Testy McTestface";
+            bool isValid = validation.DoesNotEqualAny(new string[] {"321","123" }).IsValid;
+            string message = validation.ErrorMessage;
+            Assert.IsTrue(message.Contains("321, 123"));
+        }
         [TestMethod]
         public void Validator_Returns_Error_Message_Caption()
         {
@@ -29,7 +47,7 @@ namespace CSTests
             rtb.Text = "";
             rtb.ID = "IPAddress";
             Validator validation = new Validator(rtb); 
-            Assert.IsTrue(validation.Require().IsValid);
+            Assert.IsFalse(validation.Require().IsValid);
         }
         [TestMethod]
         public void Validator_Validates_SingleCode()
@@ -49,6 +67,16 @@ namespace CSTests
             Validator validation = new Validator(rtb); 
             validation.Phone().IpAddress().ValidateAny();
             Assert.IsTrue(validation.IsValid);
-        } 
+        }
+        [TestMethod]
+        public void Validator_Validates_MultiCodesFalse()
+        {
+            RadTextBox rtb = new RadTextBox();
+            rtb.Text = "X";
+            rtb.ID = "Nothing";
+            Validator validation = new Validator(rtb);
+            validation.Phone().IpAddress().MinLength(2).ValidateAny();
+            Assert.IsFalse(validation.IsValid);
+        }
     }
 }
