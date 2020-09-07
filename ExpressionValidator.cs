@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
+using System.Runtime.CompilerServices;
+[assembly: InternalsVisibleTo("CSTests")]
+[assembly: InternalsVisibleTo("VBTest")]
 namespace CSValidator
 {
-    internal class ExpressionValidator : BaseValidator, IValidator
+    public class ExpressionValidator : BaseValidator, IValidator
     {
         private string _ValidationCode;
         public ExpressionValidator(string ValidationCode)

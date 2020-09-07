@@ -7,7 +7,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Runtime.CompilerServices;
+[assembly: InternalsVisibleTo("CSTests")]
 namespace CSValidator
 {
     public class ValidationDefinitionProvider

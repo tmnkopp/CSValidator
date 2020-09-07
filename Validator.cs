@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.UI;
-
+using System.Web.UI; 
 namespace CSValidator
-{
+{ 
     public class Validator
-    {
-         
+    { 
         #region CTOR
-         
-        private List<IValidator> Validators; 
+
+        protected List<IValidator> Validators; 
         public Validator()
         { 
             Validators = new List<IValidator>();
@@ -95,14 +93,13 @@ namespace CSValidator
         {
             _ErrorMessage = ErrorMessage;
             return this;
-        } 
-        public Validator Validate(Control ControlToValidate, string ValidationCode)
+        }
+        public Validator Validate(Control ControlToValidate)
         {
             Init();
-            SetControlProps(ControlToValidate);
-            Validators.Add(new ExpressionValidator(ValidationCode));
+            SetControlProps(ControlToValidate); 
             return this;
-        }
+        } 
         public Validator Validate(Control ControlToValidate, Func<string, bool> ValidationDelegate, string ErrorMessage)
         {
             Init();
@@ -124,15 +121,17 @@ namespace CSValidator
             AddDelegate(ValidationDelegate, ErrorMessage);
             return this;
         }
-        public Validator Validate(string StringToValidate, string ValidationCode)
+        public Validator Validate(string StringToValidate)
         {
             Init();
             this._TargetValue = StringToValidate;
-            Validators.Add(new ExpressionValidator(ValidationCode));
             return this;
         }
-
-        public Validator ApplyCode(string ValidationCode)
+        public Validator ApplyValidator(ExpressionValidator ExpressionCodeValidator) {
+            Validators.Add(ExpressionCodeValidator);
+            return this;
+        }
+        public Validator ApplyValidationCode(string ValidationCode)
         {
             Validators.Add(new ExpressionValidator(ValidationCode));
             return this;
@@ -166,11 +165,11 @@ namespace CSValidator
             this._TargetValue = ControlToValidate.ExtractValueFromControl().Trim();
         } 
 
-        private void AddDelegate(Func<string, bool> ValidationDelegate, string ErrorMessage)
+        protected void AddDelegate(Func<string, bool> ValidationDelegate, string ErrorMessage)
         {
             Validators.Add(new DelegateValidator(ValidationDelegate, ErrorMessage));
         }
-        private void AddDelegate(Func<string, bool> ValidationDelegate, string ErrorCode, string ValidationParam)
+        protected void AddDelegate(Func<string, bool> ValidationDelegate, string ErrorCode, string ValidationParam)
         {
             Validators.Add(new DelegateValidator(ValidationDelegate, ErrorCode, ValidationParam));
         }
@@ -188,8 +187,13 @@ namespace CSValidator
             return ErrorMesssage;
         }
         #endregion
-          
+
         #region Fluent Accessors
+        public Validator Require()
+        {
+            AddDelegate((s) => (!string.IsNullOrEmpty(s) && !string.IsNullOrWhiteSpace(s)), "{0} " + $"is a required field.");
+            return this;
+        }
         public Validator IpAddress()
         {
             Validators.Add(new ExpressionValidator("IPADDRESS"));
@@ -224,11 +228,7 @@ namespace CSValidator
 
         #region Fluent Delegates
 
-        public Validator Require()
-        {
-            AddDelegate((s) => !(string.IsNullOrEmpty(s) || string.IsNullOrWhiteSpace(s)), "{0} " + $"is a required field.");
-            return this;
-        }
+
         public Validator MaxLength(int Length)
         {
             if (Length < 0)

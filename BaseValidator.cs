@@ -10,10 +10,12 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using System.Runtime.CompilerServices;
+[assembly: InternalsVisibleTo("CSTests")]
+[assembly: InternalsVisibleTo("VBTest")]
 namespace CSValidator
-{ 
-    internal abstract class BaseValidator: IValidator
+{
+    public abstract class BaseValidator: IValidator
     {
         #region CTORs 
         public BaseValidator()

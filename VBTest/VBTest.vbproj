@@ -83,6 +83,7 @@
     <Import Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlphaNumericValidator.vb" />
     <Compile Include="TestControls.vb" />
     <Compile Include="TestValidator.vb" />
     <Compile Include="TestDelegate.vb" />

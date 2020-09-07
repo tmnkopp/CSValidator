@@ -6,7 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using System.Runtime.CompilerServices;
+[assembly: InternalsVisibleTo("CSTests")]
 namespace CSValidator
 {
     internal static class ValidatorExtentions
